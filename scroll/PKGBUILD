@@ -1,0 +1,37 @@
+# Maintainer: Loup Labelle <louplabele@hotmail.com>
+
+pkgname=scroll
+pkgver=0.1
+pkgrel=1
+pkgdesc='A scroll back buffer for a terminal like st(1)'
+arch=('i686' 'x86_64')
+# depends=('libxft')
+# makedepends=('ncurses' 'desktop-file-utils')
+url="http://tools.suckless.org/scroll"
+license=("custom")
+source=("http://dl.suckless.org/tools/$pkgname-$pkgver.tar.gz"
+	"config.h")
+md5sums=('aaaae2c9e3c3c8e79dbdec95acdd6287'
+         '6c661cbac6655ec23c5dc346e034d152')
+
+prepare() {
+	cd $srcdir/$pkgname-$pkgver
+	# skip terminfo which conflicts with ncurses
+	sed -i '/tic /d' Makefile
+	cp $srcdir/config.h config.h
+	# for patch in "${_patches[@]}"; do
+	# 	echo "Applying patch $(basename $patch)..."
+	# 	patch -Np1 -i "$srcdir/$(basename $patch)"
+	# done
+}
+
+build() {
+	cd $srcdir/$pkgname-$pkgver
+	make X11INC=/usr/include/X11 X11LIB=/usr/lib/X11
+}
+
+package() {
+	cd $srcdir/$pkgname-$pkgver
+	make PREFIX=/usr DESTDIR="$pkgdir" TERMINFO="$pkgdir/usr/share/terminfo" install
+	install -Dm644 README "$pkgdir/usr/share/doc/$pkgname/README"
+}
